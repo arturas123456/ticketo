@@ -6,6 +6,6 @@ router.post('/:event_id', createTicket);
 router.get('/:ticket_id', readTicket);
 router.put('/:ticket_id', updateTicket);
 router.delete('/:ticket_id', deleteTicket);
-router.get('/:user_id', listTickets);
+router.get('/', listTickets);
 
 module.exports = router;

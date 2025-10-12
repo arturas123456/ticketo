@@ -1,31 +1,45 @@
 const { Ticket } = require('../models');
 
 exports.createTicket = async (req, res) => {
-    const ticket = await Ticket.create({ seat: req.body.seat, event_id: req.body.event_id });
+    const { seat, event_id } = req.body;
+    if (!seat || !event_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const ticket = await Ticket.create({ seat, event_id });
     res.status(201).json(ticket);
 };
 
 exports.readTicket = async (req, res) => {
-    const ticket = await Ticket.findByPk(req.body.ticket_id);
+    const { ticket_id } = req.body;
+    if (!ticket_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const ticket = await Ticket.findByPk(ticket_id);
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-    res.json(ticket);
+    res.status(200).json(ticket);
 };
 
 exports.updateTicket = async (req, res) => {
-    const ticket = await Ticket.findByPk(req.body.ticket_id);
+    const { seat, user_id, ticket_id } = req.body;
+    if (!seat || !user_id || !ticket_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const ticket = await Ticket.findByPk(ticket_id);
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-    await ticket.update({ seat: req.body.seat, owner_id: req.body.user_id });
+
+    await ticket.update({ seat, owner_id: user_id });
     res.status(204).json({ message: 'Ticket updated' });
 };
 
 exports.deleteTicket = async (req, res) => {
-    const ticket = await Ticket.findByPk(req.body.ticket_id);
+    const { ticket_id } = req.body;
+    if (!ticket_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const ticket = await Ticket.findByPk(ticket_id);
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
     await ticket.destroy();
     res.status(204).json({ message: 'Ticket deleted' });
 };
 
 exports.listTickets = async (req, res) => {
-    const tickets = await Ticket.findAll();
+    const tickets = await Ticket.findAll({ where: { owner_id: req.user.id } });
     res.json(tickets);
 };

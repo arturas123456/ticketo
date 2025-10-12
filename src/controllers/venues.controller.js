@@ -1,26 +1,45 @@
 const { Venue } = require('../models');
 
 exports.createVenue = async (req, res) => {
-    const venue = await Venue.create({ name: req.body.name, address: req.body.address, capacity: req.body.capacity });
+    const { name, address, capacity } = req.body;
+    if (!name || !address || !capacity) return res.status(400).json({ message: 'Missing required fields' });
+
+    const venue = await Venue.create({ name, address, capacity });
     res.status(201).json(venue);
 };
 
 exports.readVenue = async (req, res) => {
-    const venue = await Venue.findByPk(req.body.venue_id);
+    const { venue_id } = req.body;
+    if (!venue_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const venue = await Venue.findByPk(venue_id);
     if (!venue) return res.status(404).json({ message: 'Venue not found' });
     res.json(venue);
 };
 
 exports.updateVenue = async (req, res) => {
-    const venue = await Venue.findByPk(req.body.venue_id);
+    const { name, address, capacity, venue_id } = req.body;
+    if (!name || !address || !capacity || !venue_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const venue = await Venue.findByPk(venue_id);
     if (!venue) return res.status(404).json({ message: 'Venue not found' });
-    await venue.update({ name: req.body.name, address: req.body.address, capacity: req.body.capacity });
+
+    await venue.update({ name, address, capacity });
     res.status(204).json({ message: 'Venue updated' });
 };
 
 exports.deleteVenue = async (req, res) => {
-    const venue = await Venue.findByPk(req.body.venue_id);
+    const { venue_id } = req.body;
+    if (!venue_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const venue = await Venue.findByPk(venue_id);
     if (!venue) return res.status(404).json({ message: 'Venue not found' });
+
     await venue.destroy();
     res.status(204).json({ message: 'Venue deleted' });
+};
+
+exports.listVenues = async (req, res) => {
+    const venues = await Venue.findAll();
+    res.status(200).json(venues);
 };

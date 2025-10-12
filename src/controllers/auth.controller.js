@@ -4,6 +4,8 @@ const generateToken = require('../utils/jwt');
 
 exports.register = async (req, res) => {
     const { email, password, name } = req.body;
+    if (!email || !password || !name) return res.status(400).json({ message: 'Missing required fields' });
+
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ message: 'Email already used' });
 
@@ -15,6 +17,8 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: 'Missing required fields' });
+
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
@@ -22,5 +26,5 @@ exports.login = async (req, res) => {
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
 
     const token = generateToken(user);
-    res.json({ token });
+    res.status(200).json({ token });
 };

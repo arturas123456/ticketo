@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createVenue, readVenue, updateVenue, deleteVenue } = require('../controllers/venues.controller');
+const { createVenue, readVenue, updateVenue, deleteVenue, listVenues } = require('../controllers/venues.controller');
 
 router.post('/', createVenue);
 router.get('/:venue_id', readVenue);
