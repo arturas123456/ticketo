@@ -1,4 +1,8 @@
-const { sequelize } = require('./models');
+const sequelize = require('./config/database');
+const User = require('./models/user.model');
+const Venue = require('./models/venue.model');
+const Event = require('./models/event.model');
+const Ticket = require('./models/ticket.model');
 
 async function setup() {
     try {
