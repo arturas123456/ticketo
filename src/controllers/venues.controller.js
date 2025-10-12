@@ -24,8 +24,3 @@ exports.deleteVenue = async (req, res) => {
     await venue.destroy();
     res.status(204).json({ message: 'Venue deleted' });
 };
-
-exports.listVenues = async (req, res) => {
-    const venues = await Venue.findAll();
-    res.json(venues);
-};

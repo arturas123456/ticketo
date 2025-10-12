@@ -24,3 +24,8 @@ exports.deleteTicket = async (req, res) => {
     await ticket.destroy();
     res.status(204).json({ message: 'Ticket deleted' });
 };
+
+exports.listTickets = async (req, res) => {
+    const tickets = await Ticket.findAll();
+    res.json(tickets);
+};

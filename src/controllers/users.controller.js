@@ -21,8 +21,3 @@ exports.deleteUser = async (req, res) => {
     await user.destroy();
     res.status(204).json({ message: 'User deleted' });
 };
-
-exports.listUsers = async (req, res) => {
-    const users = await User.findAll();
-    res.json(users);
-};
