@@ -3,9 +3,10 @@ const router = express.Router();
 const { createVenue, readVenue, updateVenue, deleteVenue, listVenues } = require('../controllers/venues.controller');
 
 router.post('/', createVenue);
-router.get('/:venue_id', readVenue);
-router.put('/:venue_id', updateVenue);
-router.delete('/:venue_id', deleteVenue);
+router.get('/', readVenue);
+router.put('/', updateVenue);
+router.delete('/', deleteVenue);
+router.get('/list', listVenues);
 
 
 module.exports = router;

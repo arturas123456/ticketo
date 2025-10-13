@@ -4,9 +4,9 @@ const { createUser, readUser, updateUser, deleteUser } = require('../controllers
 const { listTickets } = require('../controllers/tickets.controller');
 
 router.post('/', createUser);
-router.get('/:user_id', readUser);
-router.put('/:user_id', updateUser);
-router.delete('/:user_id', deleteUser);
+router.get('/', readUser);
+router.put('/', updateUser);
+router.delete('/', deleteUser);
 router.get('/tickets', listTickets)
 
 module.exports = router;

@@ -1,11 +1,11 @@
-const { Event } = require('../models');
+const Event = require('../models/event.model');
 
 exports.createEvent = async (req, res) => {
-    const { title, description, starts_at, ends_at, venue_id } = req.body;
-    if (!title || !description || !starts_at || !ends_at || !venue_id) return res.status(400).json({ message: 'Missing required fields' });
+    const { title, description, starts_at, ends_at, venue_id, organizer_id } = req.body;
+    if (!title || !description || !starts_at || !ends_at || !venue_id || !organizer_id) return res.status(400).json({ message: 'Missing required fields' });
 
     const event = await Event.create({
-        title, description, starts_at, ends_at, venue_id, organizer_id: req.user.id
+        title, description, starts_at, ends_at, venue_id, organizer_id
     });
     res.status(201).json(event);
 };
@@ -21,13 +21,13 @@ exports.readEvent = async (req, res) => {
 };
 
 exports.updateEvent = async (req, res) => {
-    const { title, description, venue, starts_at, ends_at, event_id } = req.body;
+    const { title, description, starts_at, ends_at, venue_id, event_id } = req.body;
     if (!title || !description || !starts_at || !ends_at || !venue_id || !event_id) return res.status(400).json({ message: 'Missing required fields' });
 
     const event = await Event.findByPk(event_id);
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    await event.update({ title, description, venue, starts_at, ends_at });
+    await event.update({ title, description, starts_at, ends_at, venue_id });
     res.status(204).json({ message: 'Event updated' });
 };
 

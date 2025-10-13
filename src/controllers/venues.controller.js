@@ -1,10 +1,10 @@
-const { Venue } = require('../models');
+const Venue = require('../models/venue.model');
 
 exports.createVenue = async (req, res) => {
-    const { name, address, capacity } = req.body;
-    if (!name || !address || !capacity) return res.status(400).json({ message: 'Missing required fields' });
+    const { name, city, address, capacity } = req.body;
+    if (!name || !city || !address || !capacity) return res.status(400).json({ message: 'Missing required fields' });
 
-    const venue = await Venue.create({ name, address, capacity });
+    const venue = await Venue.create({ name, city, address, capacity });
     res.status(201).json(venue);
 };
 

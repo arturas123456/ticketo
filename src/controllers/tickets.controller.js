@@ -1,4 +1,4 @@
-const { Ticket } = require('../models');
+const Ticket = require('../models/ticket.model');
 
 exports.createTicket = async (req, res) => {
     const { seat, event_id } = req.body;
@@ -18,13 +18,13 @@ exports.readTicket = async (req, res) => {
 };
 
 exports.updateTicket = async (req, res) => {
-    const { seat, user_id, ticket_id } = req.body;
-    if (!seat || !user_id || !ticket_id) return res.status(400).json({ message: 'Missing required fields' });
+    const { user_id, ticket_id } = req.body;
+    if (!user_id || !ticket_id) return res.status(400).json({ message: 'Missing required fields' });
 
     const ticket = await Ticket.findByPk(ticket_id);
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
-    await ticket.update({ seat, owner_id: user_id });
+    await ticket.update({ owner_id: user_id, status: 'taken' });
     res.status(204).json({ message: 'Ticket updated' });
 };
 
@@ -40,6 +40,14 @@ exports.deleteTicket = async (req, res) => {
 };
 
 exports.listTickets = async (req, res) => {
-    const tickets = await Ticket.findAll({ where: { owner_id: req.user.id } });
-    res.json(tickets);
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ message: 'Missing required fields' });
+
+    const tickets = await Ticket.findAll({ where: { owner_id: user_id } });
+    res.status(200).json(tickets);
+};
+
+exports.listAllTickets = async (req, res) => {
+    const tickets = await Ticket.findAll();
+    res.status(200).json(tickets);
 };
