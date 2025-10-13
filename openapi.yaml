@@ -164,7 +164,7 @@ paths:
     post:
       tags: [Events]
       summary: Create a new event
-      description: Create a new event with all required details
+      description: Create a new event with all required details. Validates that the organizer and venue exist, and that the end date is after the start date.
       security:
         - bearerAuth: []
       requestBody:
@@ -209,16 +209,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/Event'
         '400':
-          description: Missing required fields
+          description: Missing required fields or end date must be after start date
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                missing_fields:
+                  value:
+                    message: "Missing required fields"
+                invalid_dates:
+                  value:
+                    message: "End date must be after start date"
+        '404':
+          description: User or venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                user_not_found:
+                  value:
+                    message: "User not found"
+                venue_not_found:
+                  value:
+                    message: "Venue not found"
     
     put:
       tags: [Events]
       summary: Update an event
-      description: Update an existing event's details
+      description: Update an existing event's details. Validates that the venue exists and that the end date is after the start date.
       security:
         - bearerAuth: []
       requestBody:
@@ -259,22 +279,36 @@ paths:
         '204':
           description: Event updated successfully
         '400':
-          description: Missing required fields
+          description: Missing required fields or end date must be after start date
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                missing_fields:
+                  value:
+                    message: "Missing required fields"
+                invalid_dates:
+                  value:
+                    message: "End date must be after start date"
         '404':
-          description: Event not found
+          description: Event or venue not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                event_not_found:
+                  value:
+                    message: "Event not found"
+                venue_not_found:
+                  value:
+                    message: "Venue not found"
     
     delete:
       tags: [Events]
       summary: Delete an event
-      description: Delete an existing event
+      description: Delete an existing event. This will also cascade delete all tickets associated with the event.
       security:
         - bearerAuth: []
       requestBody:
@@ -291,7 +325,7 @@ paths:
                   example: 1
       responses:
         '204':
-          description: Event deleted successfully
+          description: Event deleted successfully (including all associated tickets)
         '400':
           description: Missing required fields
           content:
@@ -437,7 +471,7 @@ paths:
     get:
       tags: [Users]
       summary: List tickets belonging to a user
-      description: Retrieve all tickets owned by a specific user
+      description: Retrieve all tickets owned by a specific user. Validates that the user exists before retrieving tickets.
       security:
         - bearerAuth: []
       requestBody:
@@ -463,6 +497,12 @@ paths:
                   $ref: '#/components/schemas/Ticket'
         '400':
           description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
           content:
             application/json:
               schema:
@@ -510,7 +550,7 @@ paths:
     post:
       tags: [Tickets]
       summary: Create a ticket
-      description: Create a new ticket for an event
+      description: Create a new ticket for an event. Validates that the event exists before creating the ticket.
       security:
         - bearerAuth: []
       requestBody:
@@ -542,11 +582,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     
     put:
       tags: [Tickets]
       summary: Update a ticket (assign to user)
-      description: Assign a ticket to a user (purchase/book ticket)
+      description: Assign a ticket to a user (purchase/book ticket). Validates that both the ticket and user exist, and sets the ticket status to 'taken'.
       security:
         - bearerAuth: []
       requestBody:
@@ -567,7 +613,7 @@ paths:
                   example: 1
       responses:
         '204':
-          description: Ticket updated successfully
+          description: Ticket updated successfully (assigned to user and status set to 'taken')
         '400':
           description: Missing required fields
           content:
@@ -575,11 +621,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '404':
-          description: Ticket not found
+          description: Ticket or user not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                ticket_not_found:
+                  value:
+                    message: "Ticket not found"
+                user_not_found:
+                  value:
+                    message: "User not found"
     
     delete:
       tags: [Tickets]
@@ -674,7 +727,7 @@ paths:
     post:
       tags: [Venues]
       summary: Create a new venue
-      description: Create a new venue with location and capacity details
+      description: Create a new venue with location and capacity details. Capacity must be greater than 0.
       security:
         - bearerAuth: []
       requestBody:
@@ -700,6 +753,7 @@ paths:
                   example: "123 Main Street, New York, NY 10001"
                 capacity:
                   type: integer
+                  minimum: 1
                   example: 5000
       responses:
         '201':
@@ -709,16 +763,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Venue'
         '400':
-          description: Missing required fields
+          description: Missing required fields or capacity must be greater than 0
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                missing_fields:
+                  value:
+                    message: "Missing required fields"
+                invalid_capacity:
+                  value:
+                    message: "Capacity must be greater than 0"
     
     put:
       tags: [Venues]
       summary: Update a venue
-      description: Update an existing venue's details
+      description: Update an existing venue's details. Capacity must be greater than 0.
       security:
         - bearerAuth: []
       requestBody:
@@ -744,16 +805,24 @@ paths:
                   example: "456 Updated Street, New York, NY 10001"
                 capacity:
                   type: integer
+                  minimum: 1
                   example: 6000
       responses:
         '204':
           description: Venue updated successfully
         '400':
-          description: Missing required fields
+          description: Missing required fields or capacity must be greater than 0
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                missing_fields:
+                  value:
+                    message: "Missing required fields"
+                invalid_capacity:
+                  value:
+                    message: "Capacity must be greater than 0"
         '404':
           description: Venue not found
           content:
@@ -764,7 +833,7 @@ paths:
     delete:
       tags: [Venues]
       summary: Delete a venue
-      description: Delete an existing venue
+      description: Delete an existing venue. Cannot delete a venue that has associated events.
       security:
         - bearerAuth: []
       requestBody:
@@ -783,11 +852,18 @@ paths:
         '204':
           description: Venue deleted successfully
         '400':
-          description: Missing required fields
+          description: Missing required fields or cannot delete venue with events
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                missing_fields:
+                  value:
+                    message: "Missing required fields"
+                venue_has_events:
+                  value:
+                    message: "Cannot delete venue with events"
         '404':
           description: Venue not found
           content:
@@ -919,7 +995,8 @@ components:
           example: "123 Main Street, New York, NY 10001"
         capacity:
           type: integer
-          description: Maximum capacity of the venue
+          minimum: 1
+          description: Maximum capacity of the venue (must be greater than 0)
           example: 5000
         createdAt:
           type: string
@@ -946,7 +1023,7 @@ components:
         status:
           type: string
           description: Current status of the ticket
-          enum: [available, taken]
+          enum: [available, unavailable]
           default: available
           example: "available"
         event_id:

@@ -32,7 +32,7 @@ exports.updateTicket = async (req, res) => {
     const user = await User.findByPk(user_id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    await ticket.update({ owner_id: user_id, status: 'taken' });
+    await ticket.update({ owner_id: user_id, status: 'unavailable' });
     res.status(204).json({ message: 'Ticket updated' });
 };
 
