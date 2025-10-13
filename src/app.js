@@ -5,12 +5,13 @@ const eventRoutes = require('./routes/events.routes');
 const userRoutes = require('./routes/users.routes');
 const venueRoutes = require('./routes/venues.routes');
 const ticketRoutes = require('./routes/tickets.routes');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./openapi.yaml');
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Ticketo API' });
-});
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);

@@ -1,0 +1,978 @@
+openapi: 3.1.0
+info:
+  title: Event Management API (Ticketo)
+  version: 1.0.0
+  description: >
+    OpenAPI specification for the Ticketo Event Management API.
+    This API handles user authentication, event management, ticketing, and venue operations.
+    
+    Features:
+    - User registration and authentication with JWT tokens
+    - Event creation, management, and listing
+    - Venue management with capacity and location details
+    - Ticket booking and management system
+    
+servers:
+  - url: http://localhost:4000/api
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Authentication endpoints for user registration and login
+  - name: Users
+    description: User management operations
+  - name: Events
+    description: Event CRUD operations and listing
+  - name: Tickets
+    description: Ticket management and booking operations
+  - name: Venues
+    description: Venue CRUD operations and listing
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      description: Create a new user account with email, password, and name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  description: Full name of the user
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  description: User's email address (must be unique)
+                  example: "john.doe@example.com"
+                password:
+                  type: string
+                  format: password
+                  description: User's password (will be hashed)
+                  example: "securePassword123"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: "john.doe@example.com"
+        '400':
+          description: Invalid input or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in a user
+      description: Authenticate a user and return a JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john.doe@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "securePassword123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT authentication token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events:
+    get:
+      tags: [Events]
+      summary: Get event details
+      description: Retrieve details of a specific event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event_id
+              properties:
+                event_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Event retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags: [Events]
+      summary: Create a new event
+      description: Create a new event with all required details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - starts_at
+                - ends_at
+                - venue_id
+                - organizer_id
+              properties:
+                title:
+                  type: string
+                  example: "Summer Music Festival"
+                description:
+                  type: string
+                  example: "Annual summer music festival featuring local and international artists"
+                starts_at:
+                  type: string
+                  format: date-time
+                  example: "2024-07-15T18:00:00Z"
+                ends_at:
+                  type: string
+                  format: date-time
+                  example: "2024-07-15T23:00:00Z"
+                venue_id:
+                  type: integer
+                  example: 1
+                organizer_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Event created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags: [Events]
+      summary: Update an event
+      description: Update an existing event's details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event_id
+                - title
+                - description
+                - starts_at
+                - ends_at
+                - venue_id
+              properties:
+                event_id:
+                  type: integer
+                  example: 1
+                title:
+                  type: string
+                  example: "Updated Summer Music Festival"
+                description:
+                  type: string
+                  example: "Updated description for the music festival"
+                starts_at:
+                  type: string
+                  format: date-time
+                  example: "2024-07-15T18:00:00Z"
+                ends_at:
+                  type: string
+                  format: date-time
+                  example: "2024-07-15T23:00:00Z"
+                venue_id:
+                  type: integer
+                  example: 1
+      responses:
+        '204':
+          description: Event updated successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags: [Events]
+      summary: Delete an event
+      description: Delete an existing event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event_id
+              properties:
+                event_id:
+                  type: integer
+                  example: 1
+      responses:
+        '204':
+          description: Event deleted successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events/list:
+    get:
+      tags: [Events]
+      summary: List all events
+      description: Retrieve a list of all events
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of events returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Get user details
+      description: Retrieve details of a specific user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags: [Users]
+      summary: Update a user
+      description: Update user details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - name
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: "Updated Name"
+      responses:
+        '204':
+          description: User updated successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags: [Users]
+      summary: Delete a user
+      description: Delete an existing user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+      responses:
+        '204':
+          description: User deleted successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/tickets:
+    get:
+      tags: [Users]
+      summary: List tickets belonging to a user
+      description: Retrieve all tickets owned by a specific user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: User tickets listed successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tickets:
+    get:
+      tags: [Tickets]
+      summary: Get ticket details
+      description: Retrieve details of a specific ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ticket_id
+              properties:
+                ticket_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Ticket retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags: [Tickets]
+      summary: Create a ticket
+      description: Create a new ticket for an event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - seat
+                - event_id
+              properties:
+                seat:
+                  type: string
+                  example: "A12"
+                event_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Ticket created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags: [Tickets]
+      summary: Update a ticket (assign to user)
+      description: Assign a ticket to a user (purchase/book ticket)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ticket_id
+                - user_id
+              properties:
+                ticket_id:
+                  type: integer
+                  example: 1
+                user_id:
+                  type: integer
+                  example: 1
+      responses:
+        '204':
+          description: Ticket updated successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags: [Tickets]
+      summary: Delete a ticket
+      description: Delete an existing ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ticket_id
+              properties:
+                ticket_id:
+                  type: integer
+                  example: 1
+      responses:
+        '204':
+          description: Ticket deleted successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tickets/list:
+    get:
+      tags: [Tickets]
+      summary: List all tickets
+      description: Retrieve a list of all tickets in the system
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Tickets listed successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+
+  /venues:
+    get:
+      tags: [Venues]
+      summary: Get venue details
+      description: Retrieve details of a specific venue
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - venue_id
+              properties:
+                venue_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Venue retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Venue'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags: [Venues]
+      summary: Create a new venue
+      description: Create a new venue with location and capacity details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - city
+                - address
+                - capacity
+              properties:
+                name:
+                  type: string
+                  example: "Grand Concert Hall"
+                city:
+                  type: string
+                  example: "New York"
+                address:
+                  type: string
+                  example: "123 Main Street, New York, NY 10001"
+                capacity:
+                  type: integer
+                  example: 5000
+      responses:
+        '201':
+          description: Venue created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Venue'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags: [Venues]
+      summary: Update a venue
+      description: Update an existing venue's details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - venue_id
+                - name
+                - address
+                - capacity
+              properties:
+                venue_id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: "Updated Concert Hall"
+                address:
+                  type: string
+                  example: "456 Updated Street, New York, NY 10001"
+                capacity:
+                  type: integer
+                  example: 6000
+      responses:
+        '204':
+          description: Venue updated successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags: [Venues]
+      summary: Delete a venue
+      description: Delete an existing venue
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - venue_id
+              properties:
+                venue_id:
+                  type: integer
+                  example: 1
+      responses:
+        '204':
+          description: Venue deleted successfully
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /venues/list:
+    get:
+      tags: [Venues]
+      summary: List all venues
+      description: Retrieve a list of all venues
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Venues listed successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Venue'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from the /auth/login endpoint
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the user
+          example: 1
+        name:
+          type: string
+          description: Full name of the user
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "john.doe@example.com"
+        role:
+          type: string
+          description: User's role in the system
+          enum: [user, admin]
+          default: user
+          example: "user"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user was created
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user was last updated
+          example: "2024-01-15T10:30:00Z"
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the event
+          example: 1
+        title:
+          type: string
+          description: Title of the event
+          example: "Summer Music Festival"
+        description:
+          type: string
+          description: Detailed description of the event
+          example: "Annual summer music festival featuring local and international artists"
+        starts_at:
+          type: string
+          format: date-time
+          description: Start date and time of the event
+          example: "2024-07-15T18:00:00Z"
+        ends_at:
+          type: string
+          format: date-time
+          description: End date and time of the event
+          example: "2024-07-15T23:00:00Z"
+        venue_id:
+          type: integer
+          description: ID of the venue where the event takes place
+          example: 1
+        organizer_id:
+          type: integer
+          description: ID of the user who organized the event
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the event was created
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the event was last updated
+          example: "2024-01-15T10:30:00Z"
+
+    Venue:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the venue
+          example: 1
+        name:
+          type: string
+          description: Name of the venue
+          example: "Grand Concert Hall"
+        city:
+          type: string
+          description: City where the venue is located
+          example: "New York"
+        address:
+          type: string
+          description: Full address of the venue
+          example: "123 Main Street, New York, NY 10001"
+        capacity:
+          type: integer
+          description: Maximum capacity of the venue
+          example: 5000
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the venue was created
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the venue was last updated
+          example: "2024-01-15T10:30:00Z"
+
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the ticket
+          example: 1
+        seat:
+          type: string
+          description: Seat designation/number
+          example: "A12"
+        status:
+          type: string
+          description: Current status of the ticket
+          enum: [available, taken]
+          default: available
+          example: "available"
+        event_id:
+          type: integer
+          description: ID of the event this ticket is for
+          example: 1
+        owner_id:
+          type: integer
+          nullable: true
+          description: ID of the user who owns this ticket (null if not assigned)
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the ticket was created
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the ticket was last updated
+          example: "2024-01-15T10:30:00Z"
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message describing what went wrong
+          example: "Missing required fields"
