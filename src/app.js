@@ -10,7 +10,6 @@ const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./openapi.yaml');
 
 app.use(express.json());
-
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/auth', authRoutes);
