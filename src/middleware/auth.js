@@ -17,10 +17,6 @@ exports.authenticate = async (req, res, next) => {
 }
 
 exports.authorize = (req, res, next) => {
-    if (allowedRoles.length === 1 && Array.isArray(allowedRoles[0])) {
-        allowedRoles = allowedRoles[0];
-    }
-
     return (req, res, next) => {
         if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
         if (allowedRoles.length && !allowedRoles.includes(req.user.role)) {
