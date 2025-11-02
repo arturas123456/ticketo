@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const Ticket = require('../models/ticket.model');
 
 exports.createUser = async (req, res) => { };
 
@@ -35,6 +36,12 @@ exports.deleteUser = async (req, res) => {
 };
 
 exports.listTickets = async (req, res) => {
-    const tickets = await Ticket.findAll();
+    const user_id = req.user.id;
+    if (!user_id) return res.status(401).json({ message: 'Not authenticated' });
+
+    const user = await User.findByPk(user_id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const tickets = await Ticket.findAll({ where: { owner_id: user_id } });
     res.status(200).json(tickets);
 };

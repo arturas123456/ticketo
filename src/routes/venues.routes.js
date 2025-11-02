@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { createVenue, readVenue, updateVenue, deleteVenue, listVenues } = require('../controllers/venues.controller');
-const { authorize } = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
-router.post('/', authorize(['admin']), createVenue);
+router.post('/', auth(['admin']), createVenue);
 router.get('/', readVenue);
-router.put('/', authorize(['admin']), updateVenue);
-router.delete('/', authorize(['admin']), deleteVenue);
+router.put('/', auth(['admin']), updateVenue);
+router.delete('/', auth(['admin']), deleteVenue);
 router.get('/list', listVenues);
-
 
 module.exports = router;

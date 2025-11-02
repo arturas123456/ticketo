@@ -32,8 +32,8 @@ exports.login = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-    await Token.create({ token: refreshToken, userId: user.id, expiresAt });
+    const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    await Token.create({ token: refreshToken, user_id: user.id, expires_at });
 
     res.status(200).json({ accessToken, refreshToken });
 };
@@ -45,9 +45,9 @@ exports.refresh = async (req, res) => {
     try {
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
-        const stored = await Token.findOne({ where: { token: refreshToken, userId: decoded.id } });
+        const stored = await Token.findOne({ where: { token: refreshToken, user_id: decoded.id } });
         if (!stored || stored.revoked) return res.status(403).json({ message: 'Invalid refresh token' });
-        if (new Date(stored.expiresAt) < new Date()) return res.status(403).json({ message: 'Refresh token expired' });
+        if (new Date(stored.expires_at) < new Date()) return res.status(403).json({ message: 'Refresh token expired' });
 
         const user = await User.findByPk(decoded.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
@@ -56,8 +56,8 @@ exports.refresh = async (req, res) => {
         await stored.save();
 
         const newRefreshToken = generateRefreshToken(user);
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        await Token.create({ token: newRefreshToken, userId: user.id, expiresAt });
+        const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await Token.create({ token: newRefreshToken, user_id: user.id, expires_at });
 
         const newAccessToken = generateAccessToken(user);
         res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
